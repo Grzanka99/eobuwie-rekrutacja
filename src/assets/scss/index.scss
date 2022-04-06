@@ -1,0 +1,32 @@
+@import "./font.scss";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-primary: #4e9845;
+  --color-primary-dark: #3e7e2a;
+  --text: white;
+
+  --border-radius: 48px;
+  --border-radius-small: 20px;
+
+  --base-input-height: 48px;
+
+  --font-size-base: 14px;
+  --font-size: var(--font-size-base);
+  --font-size-large: 24px;
+
+  --padding: 16px;
+  --padding-smaller: 13px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  @include montserrat();
+}
