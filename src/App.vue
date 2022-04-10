@@ -3,7 +3,7 @@ import DatePicker from "./components/DatePicker.vue";
 </script>
 
 <template>
-  <DatePicker :base-price="38" :stars="4.5" :votes="128" />
+  <DatePicker :base-price="38" :stars="3.5" :votes="128" />
 </template>
 
 <style>

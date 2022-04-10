@@ -9,7 +9,13 @@
 :root {
   --color-primary: #4e9845;
   --color-primary-dark: #3e7e2a;
+  --color-primary-light: #a6cba2;
+
   --text: white;
+  --text-dark: black;
+  --text-grey: #999999;
+
+  --background: white;
 
   --border-radius: 48px;
   --border-radius-small: 20px;
@@ -20,8 +26,10 @@
   --font-size: var(--font-size-base);
   --font-size-large: 24px;
 
+  --padding-tiny: 5px;
   --padding: 16px;
   --padding-smaller: 13px;
+  --padding-large: 24px;
 }
 
 body {
