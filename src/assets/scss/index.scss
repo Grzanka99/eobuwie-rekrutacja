@@ -16,6 +16,7 @@
   --text-grey: #999999;
 
   --background: white;
+  --background-green-light: #edf5ec;
 
   --border-radius: 48px;
   --border-radius-small: 20px;
@@ -23,6 +24,7 @@
   --base-input-height: 48px;
 
   --font-size-base: 14px;
+  --font-size-small: 12px;
   --font-size: var(--font-size-base);
   --font-size-large: 24px;
 
@@ -36,5 +38,5 @@ body {
   margin: 0;
   padding: 0;
 
-  @include montserrat();
+  @include montserrat;
 }

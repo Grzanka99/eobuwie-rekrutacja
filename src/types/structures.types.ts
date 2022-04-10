@@ -1,6 +1,6 @@
 import { Day } from "@cgsh/calendarts/build/main/types";
 
 export interface IPickedDates {
-  startDate: Day;
-  endDate: Day;
+  startDate: Day | null;
+  endDate: Day | null;
 }

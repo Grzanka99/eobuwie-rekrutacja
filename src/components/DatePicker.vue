@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { IPickedDates } from "../types";
-import StyledButton from "./common/StyledButton.vue";
-import DateRange from "./DateRange.vue";
-import Rating from "./Rating.vue";
+import { IPickedDates } from "~/types";
+import StyledButton from "~/components/common/StyledButton.vue";
+import DateRange from "~/components/DateRange.vue";
+import Rating from "~/components/Rating.vue";
+import CalendarModal from "~/components/CalendarModal/Calendar.vue";
 
 const numerOfDays = ref(10);
+const calendarModal = ref(true);
 
 const props = defineProps<{
   basePrice: number;
@@ -15,6 +17,10 @@ const props = defineProps<{
 }>();
 
 const fullPrice = computed(() => numerOfDays.value * props.basePrice);
+
+const handleModalToggle = () => {
+  calendarModal.value = !calendarModal.value;
+};
 </script>
 
 <template>
@@ -30,7 +36,12 @@ const fullPrice = computed(() => numerOfDays.value * props.basePrice);
       </div>
       <styled-button button-text="Reserve" />
     </div>
-    <date-range />
+    <date-range @click="handleModalToggle" />
+    <calendar-modal
+      :is-open="calendarModal"
+      class="modal"
+      :reserved-dates="reservedDates"
+    />
   </form>
 </template>
 
@@ -39,6 +50,7 @@ const fullPrice = computed(() => numerOfDays.value * props.basePrice);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
 
   width: 350px;
   height: 160px;
@@ -65,6 +77,11 @@ const fullPrice = computed(() => numerOfDays.value * props.basePrice);
       font-size: var(--font-size-large);
       font-weight: 700;
     }
+  }
+
+  .modal {
+    position: absolute;
+    top: calc(100% - var(--padding));
   }
 }
 </style>

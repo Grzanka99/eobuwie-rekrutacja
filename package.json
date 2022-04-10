@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@cgsh/calendarts": "^1.0.5",
+    "luxon": "^2.3.1",
     "sass": "^1.49.11",
     "vue": "^3.2.25"
   },
