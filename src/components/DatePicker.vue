@@ -27,7 +27,7 @@ const picked = ref<IPickedDates>({
   endDate: null,
 });
 
-const handleInput = (dates: IPickedDates) => {
+const handleChange = (dates: IPickedDates) => {
   picked.value = { ...dates };
 };
 </script>
@@ -52,6 +52,7 @@ const handleInput = (dates: IPickedDates) => {
       @click="handleModalToggle"
       :picked="picked"
       :modal-open="calendarModal"
+      :remove-one="handleChange"
     />
     <transition>
       <calendar-modal
@@ -59,7 +60,8 @@ const handleInput = (dates: IPickedDates) => {
         class="modal"
         :reserved-dates="reservedDates"
         :toggle-modal="handleModalToggle"
-        @input="handleInput"
+        @change="handleChange"
+        :picked="picked"
       />
     </transition>
   </form>

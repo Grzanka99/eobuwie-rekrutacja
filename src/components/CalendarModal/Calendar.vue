@@ -15,12 +15,8 @@ const props = defineProps<{
   isOpen: boolean;
   reservedDates: IPickedDates[];
   toggleModal: () => void;
+  picked: IPickedDates;
 }>();
-
-const picked = ref<IPickedDates>({
-  startDate: null,
-  endDate: null,
-});
 
 const currentYear = ref(DateTime.now().year);
 const currentMonth = ref(
@@ -31,11 +27,15 @@ const currentMonthArray = computed<Day[][]>(
   () => Calendar.getMonthArray(currentMonth.value) as unknown as Day[][]
 );
 
-const emit = defineEmits(["input"]);
+const emit = defineEmits(["change"]);
 
 const counter = ref(0);
 const pickMe = (day: Day): void => {
   if (isReserved(day, props.reservedDates)) return;
+
+  const localPicked: IPickedDates = {
+    ...props.picked,
+  };
 
   if (counter.value === 1)
     setTimeout(() => {
@@ -43,22 +43,22 @@ const pickMe = (day: Day): void => {
     }, 150);
 
   if (counter.value === 0) {
-    picked.value.startDate = day;
-    if (!picked.value.endDate) picked.value.endDate = day;
+    localPicked.startDate = day;
+    if (!localPicked.endDate) localPicked.endDate = day;
     counter.value = 1;
   } else if (counter.value === 1) {
-    picked.value.endDate = day;
+    localPicked.endDate = day;
     counter.value = 0;
   }
 
-  if (!validatePicked(picked.value)) {
-    const temp = picked.value.startDate;
-    picked.value.startDate = picked.value.endDate;
-    picked.value.endDate = temp;
+  if (!validatePicked(localPicked)) {
+    const temp = localPicked.startDate;
+    localPicked.startDate = localPicked.endDate;
+    localPicked.endDate = temp;
     counter.value = 1;
   }
 
-  emit("input", picked.value);
+  emit("change", localPicked);
 };
 
 const nextMonth = () => {
