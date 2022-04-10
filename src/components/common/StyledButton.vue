@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 defineProps<{
   buttonText: string;
+  disabled: boolean;
 }>();
 </script>
 
 <template>
-  <button class="styled-button">{{ buttonText }}</button>
+  <button class="styled-button" :disabled="disabled">{{ buttonText }}</button>
 </template>
 
 <style lang="scss" scoped>
@@ -30,6 +31,11 @@ defineProps<{
 
   &:hover {
     background-color: var(--color-primary-dark);
+  }
+
+  &:disabled {
+    background-color: var(--color-primary-light);
+    cursor: not-allowed;
   }
 }
 </style>

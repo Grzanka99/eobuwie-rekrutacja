@@ -7,7 +7,7 @@ import Rating from "~/components/Rating.vue";
 import CalendarModal from "~/components/CalendarModal/Calendar.vue";
 
 const numerOfDays = ref(10);
-const calendarModal = ref(true);
+const calendarModal = ref(false);
 
 const props = defineProps<{
   basePrice: number;
@@ -21,10 +21,19 @@ const fullPrice = computed(() => numerOfDays.value * props.basePrice);
 const handleModalToggle = () => {
   calendarModal.value = !calendarModal.value;
 };
+
+const picked = ref<IPickedDates>({
+  startDate: null,
+  endDate: null,
+});
+
+const handleInput = (dates: IPickedDates) => {
+  picked.value = { ...dates };
+};
 </script>
 
 <template>
-  <form class="date-picker">
+  <form class="date-picker" @submit.prevent>
     <div class="date-picker__info">
       <div class="date-picker__info__column">
         <span class="date-picker__info__price">{{ fullPrice }} zł</span>
@@ -34,14 +43,25 @@ const handleModalToggle = () => {
           :votes="votes"
         />
       </div>
-      <styled-button button-text="Reserve" />
+      <styled-button
+        button-text="Reserve"
+        :disabled="!picked.startDate || !picked.endDate"
+      />
     </div>
-    <date-range @click="handleModalToggle" />
-    <calendar-modal
-      :is-open="calendarModal"
-      class="modal"
-      :reserved-dates="reservedDates"
+    <date-range
+      @click="handleModalToggle"
+      :picked="picked"
+      :modal-open="calendarModal"
     />
+    <transition>
+      <calendar-modal
+        :is-open="calendarModal"
+        class="modal"
+        :reserved-dates="reservedDates"
+        :toggle-modal="handleModalToggle"
+        @input="handleInput"
+      />
+    </transition>
   </form>
 </template>
 
@@ -82,6 +102,29 @@ const handleModalToggle = () => {
   .modal {
     position: absolute;
     top: calc(100% - var(--padding));
+    transform-origin: top;
+  }
+}
+
+.v-enter-active {
+  animation: bounce-in 0.5s;
+}
+.v-leave-active {
+  animation: bounce-in 0.5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+    z-index: -1;
+  }
+  50% {
+    transform: translateY(50px) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    z-index: 1;
+    opacity: 1;
   }
 }
 </style>

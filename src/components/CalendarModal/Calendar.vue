@@ -5,60 +5,42 @@ import { DateTime } from "luxon";
 import { computed, ref } from "vue";
 import { IPickedDates, DaysOfWeek } from "~/types";
 
+import MonthPicker from "./MonthPicker.vue";
+import DayButton from "./DayButton.vue";
+import { useCalendarHelpers } from "~/composables/calendar.composable";
+
+const { isReserved, validatePicked } = useCalendarHelpers();
+
 const props = defineProps<{
   isOpen: boolean;
   reservedDates: IPickedDates[];
+  toggleModal: () => void;
 }>();
-
-const currentMonth = ref(
-  Calendar.getMonth(DateTime.now().month - 1, DateTime.now().year)
-);
-
-const currentMonthArray = computed<Day[][]>(
-  () => Calendar.getMonthArray(currentMonth.value) as unknown as Day[][]
-);
-
-const isReserved = (day: Day): boolean =>
-  !!props.reservedDates.filter(
-    (reservedDate) =>
-      day.fullJSONDate >= reservedDate.startDate.fullJSONDate &&
-      day.fullJSONDate <= reservedDate.endDate.fullJSONDate
-  ).length;
 
 const picked = ref<IPickedDates>({
   startDate: null,
   endDate: null,
 });
 
-const pickedStatus = (day: Day): 0 | 1 | 2 | 3 | 4 => {
-  if (!picked.value.startDate && !picked.value.endDate) return 0;
-  const startDate = picked.value.startDate.fullJSONDate;
-  const endDate = picked.value.endDate.fullJSONDate;
-  const toCheck = day.fullJSONDate;
+const currentYear = ref(DateTime.now().year);
+const currentMonth = ref(
+  Calendar.getMonth(DateTime.now().month - 1, currentYear.value)
+);
 
-  if (toCheck === startDate && startDate === endDate) return 4;
-  if (toCheck === startDate) return 1;
-  if (toCheck === endDate) return 2;
-  if (toCheck > startDate && toCheck < endDate) return 3;
+const currentMonthArray = computed<Day[][]>(
+  () => Calendar.getMonthArray(currentMonth.value) as unknown as Day[][]
+);
 
-  return 0;
-};
+const emit = defineEmits(["input"]);
 
 const counter = ref(0);
+const pickMe = (day: Day): void => {
+  if (isReserved(day, props.reservedDates)) return;
 
-const validatePicked = (val: IPickedDates) => {
-  if (val.startDate.fullJSONDate > val.endDate.fullJSONDate) {
-    const temp = val.startDate;
-    val.startDate = val.endDate;
-    val.endDate = temp;
-    counter.value = 1;
-  }
-
-  return true;
-};
-
-const pickMe = (day: Day) => {
-  if (isReserved(day)) return;
+  if (counter.value === 1)
+    setTimeout(() => {
+      props.toggleModal();
+    }, 150);
 
   if (counter.value === 0) {
     picked.value.startDate = day;
@@ -69,12 +51,42 @@ const pickMe = (day: Day) => {
     counter.value = 0;
   }
 
-  validatePicked(picked.value);
+  if (!validatePicked(picked.value)) {
+    const temp = picked.value.startDate;
+    picked.value.startDate = picked.value.endDate;
+    picked.value.endDate = temp;
+    counter.value = 1;
+  }
+
+  emit("input", picked.value);
+};
+
+const nextMonth = () => {
+  const cm = currentMonth.value.month;
+  if (cm === 11) currentYear.value++;
+  currentMonth.value = Calendar.getMonth(
+    cm === 11 ? 0 : cm + 1,
+    currentYear.value
+  );
+};
+
+const prevMonth = () => {
+  const cm = currentMonth.value.month;
+  if (cm === 0) currentYear.value--;
+  currentMonth.value = Calendar.getMonth(
+    cm === 0 ? 11 : cm - 1,
+    currentYear.value
+  );
 };
 </script>
 
 <template>
   <div v-if="isOpen" class="calendar">
+    <MonthPicker
+      :prev="prevMonth"
+      :next="nextMonth"
+      :current-month="currentMonth.month"
+    />
     <ol class="calendar__container">
       <div class="calendar__week">
         <li v-for="name in DaysOfWeek" :key="name" class="flex center">
@@ -86,16 +98,14 @@ const pickMe = (day: Day) => {
         v-for="(week, i) in currentMonthArray"
         :key="i"
       >
-        <li
+        <day-button
           v-for="day in week"
           :key="day.fullJSONDate"
-          class="calendar__week__day"
-          :class="{ virtual: !day.isInCurrentMonth, reserved: isReserved(day) }"
-          :data-picked="pickedStatus(day)"
-          @click="pickMe(day)"
-        >
-          {{ day.number }}
-        </li>
+          :reserved-dates="reservedDates"
+          :day="day"
+          :picked="picked"
+          :on-pick="pickMe"
+        />
       </div>
     </ol>
   </div>
@@ -105,75 +115,21 @@ const pickMe = (day: Day) => {
 @import "../../assets/scss/font.scss";
 
 .calendar {
+  @include montserrat();
+
+  display: flex;
+  flex-direction: column;
   width: 300px;
-  height: 380px;
+  height: fit-content;
   background-color: var(--background);
   border-radius: var(--border-radius-small);
   box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.15);
+  padding: var(--padding-large);
+  gap: var(--padding);
 
   &__week {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-
-    &__day {
-      @include montserrat();
-
-      cursor: pointer;
-      position: relative;
-      width: 100%;
-      z-index: 1;
-
-      &.virtual,
-      &.reserved {
-        opacity: 0.5;
-      }
-
-      &.reserved {
-        cursor: not-allowed;
-      }
-
-      &[data-picked="1"],
-      &[data-picked="2"],
-      &[data-picked="3"],
-      &[data-picked="4"] {
-        background-color: var(--background-green-light);
-        color: var(--background);
-      }
-
-      &[data-picked="1"] {
-        border-top-left-radius: var(--border-radius-small);
-        border-bottom-left-radius: var(--border-radius-small);
-      }
-
-      &[data-picked="2"] {
-        border-top-right-radius: var(--border-radius-small);
-        border-bottom-right-radius: var(--border-radius-small);
-      }
-
-      &[data-picked="3"] {
-        color: var(--color-primary);
-      }
-
-      &[data-picked="4"] {
-        background-color: transparent;
-      }
-
-      &[data-picked="1"],
-      &[data-picked="2"],
-      &[data-picked="4"] {
-        &::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: var(--color-primary);
-          border-radius: var(--border-radius-small);
-          z-index: -1;
-        }
-      }
-    }
   }
 
   &__container {
@@ -183,7 +139,7 @@ const pickMe = (day: Day) => {
     gap: var(--padding-tiny);
 
     list-style: none;
-    padding: var(--padding-large);
+    padding: 0;
     margin: 0;
     font-size: var(--font-size-small);
 
