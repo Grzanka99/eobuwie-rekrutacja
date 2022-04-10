@@ -11,11 +11,11 @@ defineProps<{
 
 <template>
   <div class="switch-month">
-    <button @click="prev">
+    <button @click="prev" class="prev">
       <arrow-icon />
     </button>
     {{ Months[currentMonth] }}
-    <button @click="next">
+    <button @click="next" class="next">
       <arrow-icon rev />
     </button>
   </div>
