@@ -5,8 +5,8 @@ import StyledButton from "~/components/common/StyledButton.vue";
 import DateRange from "~/components/DateRange.vue";
 import Rating from "~/components/Rating.vue";
 import CalendarModal from "~/components/CalendarModal/Calendar.vue";
+import { DateTime } from "luxon";
 
-const numerOfDays = ref(10);
 const calendarModal = ref(false);
 
 const props = defineProps<{
@@ -16,8 +16,6 @@ const props = defineProps<{
   reservedDates: IPickedDates[];
 }>();
 
-const fullPrice = computed(() => numerOfDays.value * props.basePrice);
-
 const handleModalToggle = () => {
   calendarModal.value = !calendarModal.value;
 };
@@ -26,6 +24,18 @@ const picked = ref<IPickedDates>({
   startDate: null,
   endDate: null,
 });
+
+const numerOfDays = computed<number>(() => {
+  const { startDate, endDate } = picked.value;
+  if (!startDate || !endDate) return 1;
+
+  const start = DateTime.fromISO(startDate.fullJSONDate);
+  const end = DateTime.fromISO(endDate.fullJSONDate);
+
+  return end.diff(start, "days").toObject().days || 1;
+});
+
+const fullPrice = computed(() => numerOfDays.value * props.basePrice);
 
 const handleChange = (dates: IPickedDates) => {
   picked.value = { ...dates };
